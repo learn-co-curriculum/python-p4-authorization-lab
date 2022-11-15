@@ -1,70 +1,64 @@
 import flask
 
 from app import app
-from models import User
+from models import Article, User
 
 app.secret_key = b'a\xdb\xd2\x13\x93\xc1\xe9\x97\xef2\xe3\x004U\xd1Z'
 
 class TestApp:
     '''Flask API in app.py'''
-
-    def test_logs_user_in(self):
-        '''logs user in by username and adds user_id to session at /login.'''
+    
+    def test_can_only_access_member_only_while_logged_in(self):
+        '''allows logged in users to access member-only article index at /members_only_articles.'''
         with app.test_client() as client:
             
             client.get('/clear')
 
             user = User.query.first()
-            response = client.post('/login', json={
+            client.post('/login', json={
                 'username': user.username
             })
-            response_json = response.get_json()
 
-            assert(response.content_type == 'application/json')
+            response = client.get('/members_only_articles')
             assert(response.status_code == 200)
-            assert(response_json['id'] == user.id)
-            assert(response_json['username'] == user.username)
-            assert(flask.session.get('user_id') == user.id)
-
-    def test_logs_user_out(self):
-        '''removes user_id from session at /logout.'''
-        with app.test_client() as client:
-            
-            client.get('/clear')
-
-            user = User.query.first()
-            client.post('/login', json={
-                'username': user.username
-            })
-
-            response = client.delete('/logout')
-            
-            assert(response.status_code == 204)
-            assert(not response.data)
-
-    def test_checks_session(self):
-        '''checks session for user_id at /check_session.'''
-        with app.test_client() as client:
-            
-            client.get('/clear')
-
-            user = User.query.first()
-            client.post('/login', json={
-                'username': user.username
-            })
-
-            logged_in_response = client.get('/check_session')
-            logged_in_json = logged_in_response.get_json()
-
-            assert(logged_in_response.content_type == 'application/json')
-            assert(logged_in_response.status_code == 200)
-            assert(logged_in_json['id'])
-            assert(logged_in_json['username'])
 
             client.delete('/logout')
 
-            logged_out_response = client.get('/check_session')
-            logged_out_json = logged_out_response.get_json()
+            response = client.get('/members_only_articles')
+            assert(response.status_code == 401)
 
-            assert(logged_out_response.status_code == 401)
-            assert(logged_out_json == {})
+    def test_member_only_articles_shows_member_only_articles(self):
+        '''only shows member-only articles at /members_only_articles.'''
+        with app.test_client() as client:
+            
+            client.get('/clear')
+
+            user = User.query.first()
+            client.post('/login', json={
+                'username': user.username
+            })
+
+            response_json = client.get('/members_only_articles').get_json()
+            for article in response_json:
+                assert article['is_member_only'] == True
+
+    def test_can_only_access_member_only_article_while_logged_in(self):
+        '''allows logged in users to access full member-only articles at /members_only_articles/<int:id>.'''
+        with app.test_client() as client:
+            
+            client.get('/clear')
+
+            user = User.query.first()
+            client.post('/login', json={
+                'username': user.username
+            })
+
+            article_id = Article.query.with_entities(Article.id).first()[0]
+
+            response = client.get(f'/members_only_articles/{article_id}')
+            assert(response.status_code == 200)
+
+            client.delete('/logout')
+
+            response = client.get(f'/members_only_articles/{article_id}')
+            assert(response.status_code == 401)

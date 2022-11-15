@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from random import randint
+from random import randint, choice as rc
 
 from faker import Faker
 
@@ -47,6 +47,7 @@ with app.app_context():
             content=content,
             preview=preview,
             minutes_to_read=randint(1,20),
+            is_member_only = rc([True, False, False])
         )
 
         articles.append(article)
