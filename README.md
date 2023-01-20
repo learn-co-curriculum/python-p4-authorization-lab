@@ -31,7 +31,7 @@ There is some starter code in place for a Flask API backend and a React frontend
 To get set up, run:
 
 ```console
-$ pipenv install && pipenv shell
+$ pipenv install; pipenv shell
 $ npm install --prefix client
 $ cd server
 $ flask db upgrade
