@@ -47,12 +47,7 @@ class ShowArticle(Resource):
             if session['page_views'] <= 3:
                 return article_json, 200
 
-            return make_response(
-                jsonify({
-                    'message': 'Maximum pageview limit reached'
-                }),
-                401
-            )
+            return {'message': 'Maximum pageview limit reached'}, 401
 
         return article_json, 200
 
