@@ -5,7 +5,9 @@ name = "pypi"
 
 [packages]
 flask = "2.2.2"
-flask-sqlalchemy = "2.5.1"
+flask-sqlalchemy = "3.0.3"
+Werkzeug = "2.2.2"
+Werkzeug = "2.2.2"
 sqlalchemy-serializer = "1.4.1"
 faker = "15.3.2"
 flask-migrate = "4.0.0"
